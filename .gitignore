@@ -6,3 +6,6 @@ coverage/
 .vscode/
 .idea/
 npm-debug.log*
+
+# Documentos de trabajo (diseño y plan), no forman parte del entregable
+docs/
