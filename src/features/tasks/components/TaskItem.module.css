@@ -1,0 +1,13 @@
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 4px;
+  border-bottom: 1px solid var(--border);
+}
+
+.item[data-completed='true'] label {
+  text-decoration: line-through;
+  color: var(--muted);
+}
