@@ -23,7 +23,15 @@ export function createLocalStorageTaskStorage(): TaskStorage {
       }
     },
     save(tasks) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+      } catch (error) {
+        // Sin fallo silencioso: se informa y la app sigue con el estado en memoria.
+        console.warn(
+          'No se pudieron guardar las tareas (almacenamiento lleno o no disponible).',
+          error,
+        );
+      }
     },
   };
 }
