@@ -2,22 +2,17 @@ import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
 import { isTask, type Task } from '../model/task';
 import { tasksReducer } from '../model/tasksReducer';
 import { filterTasks, type FilterName } from '../model/taskFilters';
+import type { TaskCounts } from '../model/taskCounts';
 import {
   createLocalStorageTaskStorage,
   STORAGE_KEY,
   type TaskStorage,
 } from '../services/taskStorage';
 
-export interface TaskStats {
-  total: number;
-  active: number;
-  completed: number;
-}
-
 export interface UseTasksResult {
   tasks: Task[]; // ya filtradas
   filter: FilterName;
-  stats: TaskStats; // siempre sobre el total, no sobre lo filtrado
+  stats: TaskCounts; // siempre sobre el total, no sobre lo filtrado
   addTask: (title: string) => void;
   toggleTask: (id: string) => void;
   removeTask: (id: string) => void;
@@ -58,7 +53,7 @@ export function useTasks(storage: TaskStorage = defaultStorage): UseTasksResult 
 
   const tasks = useMemo(() => filterTasks(allTasks, filter), [allTasks, filter]);
 
-  const stats = useMemo<TaskStats>(
+  const stats = useMemo<TaskCounts>(
     () => ({
       total: allTasks.length,
       active: allTasks.filter((task) => !task.completed).length,

@@ -1,9 +1,9 @@
 import { Button } from '../../../components/Button/Button';
-import type { TaskStats as Stats } from '../hooks/useTasks';
+import type { TaskCounts } from '../model/taskCounts';
 import styles from './TaskStats.module.css';
 
 interface TaskStatsProps {
-  stats: Stats;
+  stats: TaskCounts;
   onClearCompleted: () => void;
 }
 
