@@ -63,7 +63,9 @@ App
 3. Filtrar por "Activas" y "Completadas": la misma lista, distinta vista.
 4. Abrir una segunda pestaña y agregar una tarea: ambas se sincronizan por
    el evento "storage". Cerrar una pestaña y ver que la limpieza del efecto
-   quita el listener.
+   quita el listener. Para la demo, sincronizar agregando o completando
+   tareas: limpiar el almacenamiento desde DevTools deja `newValue` en
+   `null` y el manejador lo ignora por diseño.
 5. Abrir `features/tasks/model/tasksReducer.test.ts` y correr
    `npm test -- tasksReducer` para mostrar la prueba de una función pura.
 
