@@ -16,9 +16,11 @@ describe('useTasks', () => {
     const storage = createMemoryTaskStorage();
     const saveSpy = vi.spyOn(storage, 'save');
     const { result } = renderHook(() => useTasks(storage));
+    // El montaje ya llamó a save una vez; se limpia para afirmar solo el efecto del addTask.
+    saveSpy.mockClear();
     act(() => result.current.addTask('Escribir pruebas'));
     expect(result.current.tasks).toHaveLength(1);
-    expect(saveSpy).toHaveBeenCalled();
+    expect(saveSpy).toHaveBeenCalledWith([expect.objectContaining({ title: 'Escribir pruebas' })]);
   });
 
   it('toggleTask invierte el estado completado', () => {
