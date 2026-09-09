@@ -24,17 +24,16 @@ La sección 7 explica cómo se añadiría cada cosa.
   sentido:
 
 ```
-presentación      componentes en components/ y features/tasks/components/
-      |            (solo pintan, reciben props)
-      v
-lógica de estado  features/tasks/hooks/useTasks.ts
-      |            (useReducer, useMemo, efectos; sin reglas de negocio)
-      v
-modelo puro       features/tasks/model/ (task, tasksReducer, taskFilters)
-      |            (funciones puras, sin React, sin efectos)
-      v
-servicios         features/tasks/services/taskStorage.ts
-                   (persistencia tras una interfaz)
+presentación  -->  lógica de estado  -->  modelo puro
+                         |                     ^
+                         v                     |
+                      servicios  ------------->+
+
+Una flecha "A --> B" significa que A depende de B (lo importa).
+- presentación: components/ y features/tasks/components/ (solo pintan, reciben props)
+- lógica de estado: features/tasks/hooks/useTasks.ts (useReducer, useMemo, efectos; sin reglas de negocio)
+- modelo puro: features/tasks/model/ (task, tasksReducer, taskFilters, taskCounts); funciones puras, sin React
+- servicios: features/tasks/services/taskStorage.ts (persistencia tras una interfaz); usa isTask y Task del modelo
 ```
 
 - Regla de dependencias: el modelo puro no importa React; el hook es el único
