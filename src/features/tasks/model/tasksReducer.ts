@@ -12,7 +12,9 @@ function assertNever(action: never): never {
   throw new Error(`Acción desconocida: ${JSON.stringify(action)}`);
 }
 
-// Función pura: sin efectos, siempre devuelve un arreglo nuevo. Es la máquina de estados.
+// Función pura: sin efectos y sin mutar el estado recibido. Cada acción devuelve un
+// estado nuevo, o el mismo si no hay cambio ("added" con título vacío), o el arreglo
+// hidratado tal cual cuando se reemplaza todo el estado. Es la máquina de estados.
 export function tasksReducer(state: Task[], action: TaskAction): Task[] {
   switch (action.type) {
     case 'added':
