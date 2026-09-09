@@ -49,4 +49,18 @@ describe('createLocalStorageTaskStorage', () => {
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
+
+  it('avisa y no lanza cuando el almacenamiento rechaza la escritura', () => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('lleno', 'QuotaExceededError');
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      expect(() => createLocalStorageTaskStorage().save([createTask('A')])).not.toThrow();
+      expect(warn).toHaveBeenCalled();
+    } finally {
+      setItem.mockRestore();
+      warn.mockRestore();
+    }
+  });
 });
