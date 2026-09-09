@@ -46,6 +46,8 @@ describe('tasksReducer', () => {
 
   it('hydrated reemplaza el estado completo', () => {
     const incoming = [createTask('Desde almacenamiento')];
-    expect(tasksReducer([createTask('Vieja')], { type: 'hydrated', tasks: incoming })).toBe(incoming);
+    expect(tasksReducer([createTask('Vieja')], { type: 'hydrated', tasks: incoming })).toBe(
+      incoming,
+    );
   });
 });

@@ -14,11 +14,7 @@ interface TaskItemProps {
 export function TaskItem({ task, onToggle, onRemove }: TaskItemProps) {
   return (
     <li className={styles.item} data-completed={task.completed}>
-      <Checkbox
-        label={task.title}
-        checked={task.completed}
-        onChange={() => onToggle(task.id)}
-      />
+      <Checkbox label={task.title} checked={task.completed} onChange={() => onToggle(task.id)} />
       <Button
         variant="danger"
         onClick={() => onRemove(task.id)}

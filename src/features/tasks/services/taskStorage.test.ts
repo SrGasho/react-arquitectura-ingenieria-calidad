@@ -1,9 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  createLocalStorageTaskStorage,
-  createMemoryTaskStorage,
-  STORAGE_KEY,
-} from './taskStorage';
+import { createLocalStorageTaskStorage, createMemoryTaskStorage, STORAGE_KEY } from './taskStorage';
 import { createTask } from '../model/task';
 
 describe('createMemoryTaskStorage', () => {
