@@ -41,4 +41,12 @@ describe('createLocalStorageTaskStorage', () => {
     expect(warn).toHaveBeenCalled();
     warn.mockRestore();
   });
+
+  it('descarta un arreglo cuyos elementos no son tareas y avisa', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([{ foo: 1 }, 42]));
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    expect(createLocalStorageTaskStorage().load()).toEqual([]);
+    expect(warn).toHaveBeenCalled();
+    warn.mockRestore();
+  });
 });

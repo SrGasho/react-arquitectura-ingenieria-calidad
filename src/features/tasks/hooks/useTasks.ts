@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import type { Task } from '../model/task';
+import { isTask, type Task } from '../model/task';
 import { tasksReducer } from '../model/tasksReducer';
 import { filterTasks, type FilterName } from '../model/taskFilters';
 import {
@@ -45,8 +45,8 @@ export function useTasks(storage: TaskStorage = defaultStorage): UseTasksResult 
       if (event.key !== STORAGE_KEY || event.newValue === null) return;
       try {
         const parsed: unknown = JSON.parse(event.newValue);
-        if (Array.isArray(parsed)) {
-          dispatch({ type: 'hydrated', tasks: parsed as Task[] });
+        if (Array.isArray(parsed) && parsed.every(isTask)) {
+          dispatch({ type: 'hydrated', tasks: parsed });
         }
       } catch {
         // Un valor corrupto de otra pestaña no debe romper esta.

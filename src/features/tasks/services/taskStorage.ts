@@ -1,4 +1,4 @@
-import type { Task } from '../model/task';
+import { isTask, type Task } from '../model/task';
 
 // DIP: los consumidores dependen de esta interfaz, no de una implementación concreta.
 export interface TaskStorage {
@@ -15,9 +15,11 @@ export function createLocalStorageTaskStorage(): TaskStorage {
       if (raw === null) return [];
       try {
         const parsed: unknown = JSON.parse(raw);
-        return Array.isArray(parsed) ? (parsed as Task[]) : [];
+        // Sin fallo silencioso: se valida la forma y se degrada a lista vacía con aviso.
+        if (Array.isArray(parsed) && parsed.every(isTask)) return parsed;
+        console.warn('Las tareas guardadas no tienen el formato esperado, se empieza vacío.');
+        return [];
       } catch (error) {
-        // Sin fallo silencioso: se informa y se degrada a lista vacía.
         console.warn('No se pudieron leer las tareas guardadas, se empieza vacío.', error);
         return [];
       }
