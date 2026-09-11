@@ -5,7 +5,7 @@ import { TaskList } from './components/TaskList';
 import { TaskStats } from './components/TaskStats';
 import styles from './TasksDashboard.module.css';
 
-// Único componente "inteligente": usa el hook y orquesta. Sin reglas de negocio aquí.
+// Único componente orquesta con el hook 
 export function TasksDashboard() {
   const { tasks, filter, stats, addTask, toggleTask, removeTask, clearCompleted, setFilter } =
     useTasks();

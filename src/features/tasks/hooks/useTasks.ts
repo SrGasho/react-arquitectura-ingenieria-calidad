@@ -10,9 +10,9 @@ import {
 } from '../services/taskStorage';
 
 export interface UseTasksResult {
-  tasks: Task[]; // ya filtradas
+  tasks: Task[];
   filter: FilterName;
-  stats: TaskCounts; // siempre sobre el total, no sobre lo filtrado
+  stats: TaskCounts;
   addTask: (title: string) => void;
   toggleTask: (id: string) => void;
   removeTask: (id: string) => void;
@@ -22,10 +22,8 @@ export interface UseTasksResult {
 
 const defaultStorage = createLocalStorageTaskStorage();
 
-// SRP: coordina estado, filtro y efectos. Las reglas de negocio viven en el reducer y en los filtros.
+// coordina estado, filtro y efectos. Las reglas de negocio viven en el reducer y en los filtros.
 export function useTasks(storage: TaskStorage = defaultStorage): UseTasksResult {
-  // DIP: el estado inicial se pide a la interfaz de almacenamiento, no a localStorage directo.
-  // Init perezoso: la carga solo corre en el primer render.
   const [allTasks, dispatch] = useReducer(tasksReducer, [], () => storage.load());
   const [filter, setFilter] = useState<FilterName>('all');
 
@@ -34,19 +32,18 @@ export function useTasks(storage: TaskStorage = defaultStorage): UseTasksResult 
     storage.save(allTasks);
   }, [allTasks, storage]);
 
-  // Efecto + limpieza: sincroniza pestañas por el evento "storage" y quita el listener al desmontar.
+  // sincroniza pestañas por el evento "storage" y quita el listener al desmontar.
   useEffect(() => {
     function handleStorage(event: StorageEvent) {
       if (event.key !== STORAGE_KEY || event.newValue === null) return;
       try {
         const parsed: unknown = JSON.parse(event.newValue);
-        // Si no pasa isTask se descarta sin aviso a propósito: el emisor es
+        // Si no pasa isTask se descarta sin aviso a propósito el emisor es
         // otra pestaña de esta misma app, no una fuente externa.
         if (Array.isArray(parsed) && parsed.every(isTask)) {
           dispatch({ type: 'hydrated', tasks: parsed });
         }
       } catch {
-        // Un valor corrupto de otra pestaña no debe romper esta.
       }
     }
     window.addEventListener('storage', handleStorage);
@@ -55,10 +52,9 @@ export function useTasks(storage: TaskStorage = defaultStorage): UseTasksResult 
 
   const tasks = useMemo(() => filterTasks(allTasks, filter), [allTasks, filter]);
 
-  // Los contadores son derivación pura: se calculan en el modelo, no aquí.
+  // Los contadores son derivación pura se calculan en el modelo, no aquí.
   const stats = useMemo(() => countTasks(allTasks), [allTasks]);
 
-  // useCallback: identidad estable al pasar estas funciones como props hacia abajo.
   const addTask = useCallback((title: string) => dispatch({ type: 'added', title }), []);
   const toggleTask = useCallback((id: string) => dispatch({ type: 'toggled', id }), []);
   const removeTask = useCallback((id: string) => dispatch({ type: 'removed', id }), []);
