@@ -1,64 +1,117 @@
 import { useCallback, useEffect, useMemo, useReducer, useState } from 'react';
-import { isTask, type Task } from '../model/task';
-import { tasksReducer } from '../model/tasksReducer';
-import { filterTasks, type FilterName } from '../model/taskFilters';
+import type { Task } from '../model/task';
 import { countTasks, type TaskCounts } from '../model/taskCounts';
-import {
-  createLocalStorageTaskStorage,
-  STORAGE_KEY,
-  type TaskStorage,
-} from '../services/taskStorage';
+import { filterTasks, type FilterName } from '../model/taskFilters';
+import { tasksReducer } from '../model/tasksReducer';
+import { apiTaskGateway, type TaskGateway } from '../services/taskGateway';
 
 export interface UseTasksResult {
   tasks: Task[];
   filter: FilterName;
   stats: TaskCounts;
-  addTask: (title: string) => void;
-  toggleTask: (id: string) => void;
-  removeTask: (id: string) => void;
-  clearCompleted: () => void;
+  isLoading: boolean;
+  error: string | null;
+  addTask: (title: string) => Promise<void>;
+  toggleTask: (id: string) => Promise<void>;
+  removeTask: (id: string) => Promise<void>;
+  clearCompleted: () => Promise<void>;
   setFilter: (filter: FilterName) => void;
 }
 
-const defaultStorage = createLocalStorageTaskStorage();
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'No se pudo completar la operación.';
+}
 
-// coordina estado, filtro y efectos. Las reglas de negocio viven en el reducer y en los filtros.
-export function useTasks(storage: TaskStorage = defaultStorage): UseTasksResult {
-  const [allTasks, dispatch] = useReducer(tasksReducer, [], () => storage.load());
+// Coordina la API, el reducer y las vistas; no contiene consultas SQL.
+export function useTasks(gateway: TaskGateway = apiTaskGateway): UseTasksResult {
+  const [allTasks, dispatch] = useReducer(tasksReducer, []);
   const [filter, setFilter] = useState<FilterName>('all');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Efecto de persistencia: no hay suscripción, no necesita limpieza.
+  // La carga inicial hidrata el estado desde el tier de aplicación.
   useEffect(() => {
-    storage.save(allTasks);
-  }, [allTasks, storage]);
+    let cancelled = false;
+    setIsLoading(true);
+    gateway
+      .list()
+      .then((tasks) => {
+        if (!cancelled) dispatch({ type: 'hydrated', tasks });
+      })
+      .catch((reason: unknown) => {
+        if (!cancelled) setError(errorMessage(reason));
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [gateway]);
 
-  // sincroniza pestañas por el evento "storage" y quita el listener al desmontar.
-  useEffect(() => {
-    function handleStorage(event: StorageEvent) {
-      if (event.key !== STORAGE_KEY || event.newValue === null) return;
+  const addTask = useCallback(
+    async (title: string) => {
+      if (title.trim() === '') return;
       try {
-        const parsed: unknown = JSON.parse(event.newValue);
-        // Si no pasa isTask se descarta sin aviso a propósito el emisor es
-        // otra pestaña de esta misma app, no una fuente externa.
-        if (Array.isArray(parsed) && parsed.every(isTask)) {
-          dispatch({ type: 'hydrated', tasks: parsed });
-        }
-      } catch {
+        setError(null);
+        const task = await gateway.create(title);
+        dispatch({ type: 'addedTask', task });
+      } catch (reason: unknown) {
+        setError(errorMessage(reason));
       }
+    },
+    [gateway],
+  );
+
+  const toggleTask = useCallback(
+    async (id: string) => {
+      try {
+        setError(null);
+        const task = await gateway.toggle(id);
+        dispatch({ type: 'updated', task });
+      } catch (reason: unknown) {
+        setError(errorMessage(reason));
+      }
+    },
+    [gateway],
+  );
+
+  const removeTask = useCallback(
+    async (id: string) => {
+      try {
+        setError(null);
+        await gateway.remove(id);
+        dispatch({ type: 'removed', id });
+      } catch (reason: unknown) {
+        setError(errorMessage(reason));
+      }
+    },
+    [gateway],
+  );
+
+  const clearCompleted = useCallback(async () => {
+    try {
+      setError(null);
+      await gateway.clearCompleted();
+      dispatch({ type: 'clearedCompleted' });
+    } catch (reason: unknown) {
+      setError(errorMessage(reason));
     }
-    window.addEventListener('storage', handleStorage);
-    return () => window.removeEventListener('storage', handleStorage);
-  }, []);
+  }, [gateway]);
 
   const tasks = useMemo(() => filterTasks(allTasks, filter), [allTasks, filter]);
-
-  // Los contadores son derivación pura se calculan en el modelo, no aquí.
   const stats = useMemo(() => countTasks(allTasks), [allTasks]);
 
-  const addTask = useCallback((title: string) => dispatch({ type: 'added', title }), []);
-  const toggleTask = useCallback((id: string) => dispatch({ type: 'toggled', id }), []);
-  const removeTask = useCallback((id: string) => dispatch({ type: 'removed', id }), []);
-  const clearCompleted = useCallback(() => dispatch({ type: 'clearedCompleted' }), []);
-
-  return { tasks, filter, stats, addTask, toggleTask, removeTask, clearCompleted, setFilter };
+  return {
+    tasks,
+    filter,
+    stats,
+    isLoading,
+    error,
+    addTask,
+    toggleTask,
+    removeTask,
+    clearCompleted,
+    setFilter,
+  };
 }

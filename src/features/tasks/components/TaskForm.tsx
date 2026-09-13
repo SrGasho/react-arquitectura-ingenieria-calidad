@@ -4,10 +4,10 @@ import { TextField } from '../../../components/TextField/TextField';
 import styles from './TaskForm.module.css';
 
 interface TaskFormProps {
-  onSubmit: (title: string) => void;
+  onSubmit: (title: string) => void | Promise<void>;
 }
 
-// Estado de interfaz efímero permitido: el texto que se está escribiendo.
+// Conserva solo el texto temporal del formulario.
 export function TaskForm({ onSubmit }: TaskFormProps) {
   const [title, setTitle] = useState('');
 
