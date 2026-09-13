@@ -1,75 +1,96 @@
 # Dashboard de Tareas
 
-Caso de estudio de la charla "React: Arquitectura, Ingeniería y Calidad"
-(Fundamentos de Ingeniería de Software). Es un CRUD mínimo de tareas pensado
-para leerse de una sentada y para señalar cada patrón en pantalla.
+Caso de estudio de la charla **React: Arquitectura, Ingeniería y Calidad**. Es un CRUD pequeño para explicar una arquitectura web de tres tiers, patrones de diseño y buenas prácticas sin ocultar el flujo.
+
+## Arquitectura
+
+```text
+React / navegador  →  API Express  →  SQLite
+ Tier 1               Tier 2          Tier 3
+```
+
+- **Tier 1:** `src/` presenta la interfaz y coordina el estado visual.
+- **Tier 2:** `backend/src/` expone la API y contiene rutas, controladores, servicios y repositorios.
+- **Tier 3:** `backend/data/tasks.db` conserva los datos en SQLite.
+
+Las rutas, controladores, servicios y repositorios son capas internas del tier de aplicación; no son tiers separados. El detalle completo está en [`ARCHITECTURE.md`](./ARCHITECTURE.md).
 
 ## Requisitos
 
-- Node 22 y npm 10.
+- Node 22
+- npm 10
 
-## Cómo correr
+## Cómo ejecutar
+
+Terminal 1, frontend:
 
 ```bash
 npm install
-npm run dev      # servidor de desarrollo en http://localhost:5173
-npm test         # batería de pruebas (Vitest + React Testing Library)
-npm run lint     # ESLint
-npm run build    # comprobación de tipos y build de producción
+npm run dev
 ```
 
-## Qué demuestra
+Terminal 2, backend:
 
-- Estructura basada en características (feature-based).
-- Componentes de presentación reutilizables y un único componente inteligente.
-- Hook personalizado (`useTasks`) que separa la lógica de la interfaz.
-- Estado como máquina de estados finitos con un reducer puro e inmutable.
-- Flujo de datos unidireccional: datos por props, eventos por callbacks.
-- `useEffect` con limpieza para sincronizar pestañas sin fugas de memoria.
-- Principios SOLID aplicados a React (ver `ARCHITECTURE.md`).
-- Pruebas en cada nivel: función pura, hook, componente e integración.
-
-## Árbol de componentes
-
+```bash
+cd backend
+npm install
+npm run dev
 ```
+
+Abrir `http://localhost:5173`. La API responde en `http://localhost:3001` y su comprobación rápida está en `http://localhost:3001/health`.
+
+## Operaciones del dashboard
+
+- Crear tareas.
+- Listar tareas.
+- Completar y descompletar tareas.
+- Filtrar por todas, activas o completadas.
+- Eliminar tareas.
+- Limpiar tareas completadas.
+
+## Árbol principal del frontend
+
+```text
 App
-└── TasksDashboard        (inteligente: usa useTasks y orquesta)
-    ├── TaskForm          (input controlado, estado de interfaz efímero)
-    ├── TaskFilterBar     (botones de filtro a partir de una lista de datos)
-    ├── TaskList          (recorre y delega)
-    │   └── TaskItem      (una fila: Checkbox + Button)
-    └── TaskStats         (contadores + limpiar completadas)
+└── TasksDashboard        # Orquesta estado y presentación
+    ├── TaskForm          # Entrada controlada
+    ├── TaskFilterBar     # Filtros desde datos
+    ├── TaskList          # Recorre la colección
+    │   └── TaskItem      # Checkbox + Button
+    └── TaskStats          # Contadores y limpieza
 ```
 
-## Mapa charla a código
+## Mapa de exposición a código
 
-| Diapositiva                       | Archivo                                                                    | Qué mirar                                                               |
-| --------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| 7, SRP y Smart/Dumb               | `features/tasks/TasksDashboard.tsx` frente a `features/tasks/components/*` | El inteligente no pinta detalle; los de presentación no tienen lógica   |
-| 8, estado como máquina de estados | `features/tasks/model/tasksReducer.ts`                                     | `switch` de acciones, siempre arreglo nuevo, `assertNever`              |
-| 8, efecto con limpieza            | `features/tasks/hooks/useTasks.ts`                                         | El `useEffect` del evento "storage" y su `return` que quita el listener |
-| 5, flujo unidireccional           | `features/tasks/TasksDashboard.tsx`                                        | Datos hacia abajo por props, eventos hacia arriba por callbacks         |
-| 9, feature-based                  | carpeta `features/tasks/`                                                  | Todo lo de tareas junto: modelo, hook, servicios, componentes, pruebas  |
-| 3, reutilización                  | `components/Button`, `components/TextField`, `components/Checkbox`         | Sin dominio, se usan en varios sitios                                   |
-| 6, OCP                            | `features/tasks/model/taskFilters.ts`                                      | Mapa de predicados; agregar un filtro no toca `filterTasks`             |
-| 6, DIP                            | `features/tasks/services/taskStorage.ts` y `useTasks`                      | El hook depende de `TaskStorage`, no de `localStorage`                  |
-| 12, pruebas                       | `*.test.ts` y `*.test.tsx`                                                 | Unidad para el modelo, `renderHook` para el hook, RTL para componentes  |
+| Tema                      | Archivo                                                       | Qué observar                               |
+| ------------------------- | ------------------------------------------------------------- | ------------------------------------------ |
+| Tres tiers                | `src/features/tasks/services/taskGateway.ts` y `backend/src/` | Frontera HTTP entre React, API y SQLite    |
+| Flujo unidireccional      | `TasksDashboard.tsx`                                          | Props hacia abajo y callbacks hacia arriba |
+| Componentes reutilizables | `src/components/`                                             | Primitivos sin conocimiento del dominio    |
+| Estado inmutable          | `model/tasksReducer.ts`                                       | Acciones y nuevos arreglos                 |
+| Modelo puro               | `features/tasks/model/`                                       | Reglas sin React ni HTTP                   |
+| Service Layer             | `backend/src/services/taskService.ts`                         | Validaciones y casos de uso                |
+| Repository Pattern        | `backend/src/repositories/`                                   | SQL aislado detrás de una interfaz         |
+| Dependency Inversion      | `TaskService` y `TaskRepository`                              | El servicio recibe su dependencia          |
+| Pruebas                   | `*.test.ts` y `*.test.tsx`                                    | Modelo, hook, componentes y servicio       |
 
-## Guion de demo en vivo
+## Guion breve de demostración
 
-1. Crear una tarea y abrir React DevTools para ver el árbol de componentes.
-2. Completar una tarea y notar que el reducer devuelve un arreglo nuevo
-   (actualización inmutable) y solo se vuelve a pintar lo mínimo.
-3. Filtrar por "Activas" y "Completadas": la misma lista, distinta vista.
-4. Abrir una segunda pestaña y agregar una tarea: ambas se sincronizan por
-   el evento "storage". Cerrar una pestaña y ver que la limpieza del efecto
-   quita el listener. Para la demo, sincronizar agregando o completando
-   tareas: limpiar el almacenamiento desde DevTools deja `newValue` en
-   `null` y el manejador lo ignora por diseño.
-5. Abrir `features/tasks/model/tasksReducer.test.ts` y correr
-   `npm test -- tasksReducer` para mostrar la prueba de una función pura.
+1. Iniciar backend y frontend en dos terminales.
+2. Crear una tarea y mostrar que React actualiza la interfaz.
+3. Abrir las herramientas de red y observar `POST /api/tasks`.
+4. Completar la tarea y seguir `PATCH → controller → service → repository → SQLite`.
+5. Mostrar `tasksReducer.ts` para explicar la actualización inmutable.
+6. Mostrar `backend/src/services/taskService.test.ts` para explicar la inyección de dependencias.
+7. Detener el backend y mostrar el mensaje de error del frontend.
 
-## Estructura
+## Pruebas y calidad
 
-Ver `ARCHITECTURE.md` para el detalle de capas, atributos de calidad,
-decisiones de arquitectura y evolución.
+```bash
+npm test
+npm run lint
+npm run build
+cd backend && npm test && npm run build
+```
+
+El frontend usa `createMemoryTaskGateway` en sus pruebas para no depender de un servidor. El backend prueba el servicio con un repositorio en memoria.
