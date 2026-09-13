@@ -3,14 +3,14 @@ import { Checkbox } from '../../../components/Checkbox/Checkbox';
 import type { Task } from '../model/task';
 import styles from './TaskItem.module.css';
 
-// ISP: recibe solo lo que usa, no el estado completo ni funciones ajenas.
+// Recibe solo las props que necesita.
 interface TaskItemProps {
   task: Task;
   onToggle: (id: string) => void;
   onRemove: (id: string) => void;
 }
 
-// SRP: presentación de una fila. Sin estado propio. Los eventos suben por callbacks.
+// Presenta una fila sin estado propio.
 export function TaskItem({ task, onToggle, onRemove }: TaskItemProps) {
   return (
     <li className={styles.item} data-completed={task.completed}>

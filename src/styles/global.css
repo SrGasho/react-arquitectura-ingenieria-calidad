@@ -1,18 +1,16 @@
 :root {
-  --bg: #f4f5f7;
-  --surface: #ffffff;
-  --border: #d9dde3;
-  --text: #1f2430;
-  --muted: #8a93a2;
-  --primary: #2f6feb;
-  --danger: #d1453b;
-  --radius: 8px;
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  --bg: #eef6f4;
+  --surface: #fffdf8;
+  --surface-soft: #f6fbf9;
+  --border: #d5e4df;
+  --text: #18302b;
+  --muted: #64756f;
+  --primary: #0f766e;
+  --primary-dark: #115e59;
+  --accent: #f59e0b;
+  --danger: #c2415a;
+  --radius: 14px;
+  font-family: 'Avenir Next', 'Trebuchet MS', 'Segoe UI', sans-serif;
   color: var(--text);
 }
 
@@ -22,5 +20,15 @@
 
 body {
   margin: 0;
+  min-width: 320px;
   background: var(--bg);
+}
+
+button,
+input {
+  font: inherit;
+}
+
+::selection {
+  background: #bde6df;
 }

@@ -7,8 +7,8 @@ export interface TaskCounts {
   completed: number;
 }
 
-// Derivación pura sobre el total, no sobre lo filtrado. Reutiliza los mismos
-// predicados que la barra de filtros: una sola definición de "activa".
+// Calcula contadores desde el estado completo.
+// Reutiliza la regla de tarea completada.
 export function countTasks(tasks: Task[]): TaskCounts {
   const completed = tasks.filter(taskFilters.completed).length;
   return { total: tasks.length, active: tasks.length - completed, completed };

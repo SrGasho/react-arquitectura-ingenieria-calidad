@@ -2,11 +2,10 @@ export interface Task {
   id: string;
   title: string;
   completed: boolean;
-  createdAt: number; // epoch en milisegundos
+  createdAt: number; // Marca temporal de creación.
 }
 
-// Recorta el título con trim. No valida vacío: esa regla vive en el reducer,
-// que es el único punto de entrada de creación.
+// Normaliza el título; el reducer valida que no esté vacío.
 export function createTask(title: string): Task {
   return {
     id: crypto.randomUUID(),

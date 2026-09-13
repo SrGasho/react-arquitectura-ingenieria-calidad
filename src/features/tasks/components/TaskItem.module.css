@@ -2,12 +2,28 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 8px 4px;
-  border-bottom: 1px solid var(--border);
+  gap: 14px;
+  padding: 12px 10px;
+  border: 1px solid transparent;
+  border-bottom-color: var(--border);
+  transition:
+    background 160ms ease,
+    border-color 160ms ease;
+}
+
+.item:hover {
+  background: var(--surface-soft);
+  border-color: var(--border);
+  border-radius: 10px;
 }
 
 .item[data-completed='true'] label {
-  text-decoration: line-through;
   color: var(--muted);
+  text-decoration: line-through;
+}
+
+@media (max-width: 440px) {
+  .item {
+    align-items: flex-start;
+  }
 }

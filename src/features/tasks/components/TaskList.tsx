@@ -8,7 +8,7 @@ interface TaskListProps {
   onRemove: (id: string) => void;
 }
 
-// SRP: solo recorre la lista y delega cada fila. Propaga los callbacks sin modificarlos.
+// Recorre y delega cada tarea.
 export function TaskList({ tasks, onToggle, onRemove }: TaskListProps) {
   if (tasks.length === 0) {
     return <p className={styles.empty}>No hay tareas para este filtro.</p>;

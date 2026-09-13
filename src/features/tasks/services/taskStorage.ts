@@ -1,6 +1,6 @@
 import { isTask, type Task } from '../model/task';
 
-// DIP: los consumidores dependen de esta interfaz, no de una implementación concreta.
+// Contrato de persistencia intercambiable.
 export interface TaskStorage {
   load(): Task[];
   save(tasks: Task[]): void;
@@ -15,7 +15,7 @@ export function createLocalStorageTaskStorage(): TaskStorage {
       if (raw === null) return [];
       try {
         const parsed: unknown = JSON.parse(raw);
-        // Sin fallo silencioso: se valida la forma y se degrada a lista vacía con aviso.
+        // Descarta datos que no cumplen el contrato.
         if (Array.isArray(parsed) && parsed.every(isTask)) return parsed;
         console.warn('Las tareas guardadas no tienen el formato esperado, se empieza vacío.');
         return [];
@@ -28,7 +28,7 @@ export function createLocalStorageTaskStorage(): TaskStorage {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
       } catch (error) {
-        // Sin fallo silencioso: se informa y la app sigue con el estado en memoria.
+        // La app continúa aunque falle la persistencia.
         console.warn(
           'No se pudieron guardar las tareas (almacenamiento lleno o no disponible).',
           error,
@@ -38,7 +38,7 @@ export function createLocalStorageTaskStorage(): TaskStorage {
   };
 }
 
-// Implementación en memoria para pruebas: no depende del navegador y permite inyectar estado.
+// Doble en memoria para pruebas sin navegador.
 export function createMemoryTaskStorage(initial: Task[] = []): TaskStorage {
   let tasks = [...initial];
   return {
